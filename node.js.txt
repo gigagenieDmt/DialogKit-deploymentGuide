@@ -1,0 +1,596 @@
+
+var _commonStr = 
+	'/**'+ '\n' +
+	' * common functions'+ '\n' +
+	' */'+ '\n' +
+	'// 로그 출력 함수 : IDE의 오류 및 디버그 로그에서 확인 가능'+ '\n' +
+	'function printLogMsg(logMsg) {'+ '\n' +
+	"  var dateFormat = require('dateformat');"+ '\n' + 
+	'  var now = new Date();'+ '\n' +
+	'  console.log(dateFormat(now, "yyyy-mm-dd HH:MM:ss") + " " + logMsg);'+ '\n' +
+	'}'+ '\n\n' +
+	
+	'/**'+ '\n\n';
+
+var _comSourceStr =
+	'**/'+ '\n' +
+	'////0. Common Function'+ '\n' +
+
+	'// request에 기존 발화(history) 존재 여부 확인 함수'+ '\n' +
+	'function getRequestHistory(request) {'+ '\n' +
+	"	var history_json = request.history;"+ '\n' +
+	'	//history_json = {"TaskFrame":{"returnCode":"0000","frame_cdss":{"vendorid":"ZeroZero","trid":"A00000011505641595194","cdsstype":"N","goal":"SearchRecipe","vserviceid":"A0000001","appinfo":{"CS":[{"Feature":"ListType","Value":"RecipesByFoodType"},{"Feature":"ListTypeValue","Value":"과자"},{"Feature":"SortType","Value":"최신순 레시피"},{"Feature":"PageNo","Value":"1"}],"actioncnt":0},"SysAct":"Specify","SysTemplate":"과자레시피를 조회합니다.","UserMesg":"지니레시피 과자 레시피 알려줘","viewtype":"A"}}};'+ '\n' +
+		
+	'	if(!history_json) {'+ '\n' +
+	'    return null;'+ '\n' +
+	'	}'+ '\n' +
+
+	'	return history_json;'+ '\n' +
+	'}'+ '\n\n' +
+
+	'// request에서 기존 발화(history)의 frame_cdss를 가져오는 함수'+ '\n' +
+	'function getReqeustHistoryFrameCDSS(request) {'+ '\n' +
+	"	var History_json = getRequestHistory(request);"+ '\n\n' +
+		
+	'	if(!History_json) {'+ '\n' +
+	'		printLogMsg("History 정보가 없습니다.");'+ '\n' +
+	'    return null;'+ '\n' +
+	'	}'+ '\n\n' +
+
+	'	if(!History_json.TaskFrame) {'+ '\n' +
+	'		printLogMsg("History json 파싱 중 오류가 발생했습니다.(history/TaskFrame)");'+ '\n' +
+	'		return null;'+ '\n' +
+	'	}'+ '\n\n' +
+
+	'	return History_json.TaskFrame.frame_cdss;'+ '\n' +
+	'}'+ '\n\n' +
+
+
+	'// request에서 기존 발화(history)의 goal을 가져오는 함수'+ '\n' +
+	'function getRequestHistoryGoal(request) {'+ '\n' +
+	"	var HistoryFrameCDSS_json = getReqeustHistoryFrameCDSS(request);"+ '\n\n' +
+		
+	'	if(!HistoryFrameCDSS_json) {'+ '\n' +
+	'		printLogMsg("History json 파싱 중 오류가 발생했습니다.(history/TaskFrame/frame_cdss)");'+ '\n' +
+	'		return null;'+ '\n' +
+	'	}'+ '\n\n' +
+		
+	'	return HistoryFrameCDSS_json.goal;'+ '\n' +
+	'}'+ '\n\n' +
+
+	'// request에서 기존 발화(history)의 CS를 가져오는 함수'+ '\n' +
+	'function getHistoryCS_json(request) {'+ '\n' +
+	"	var HistoryFrameCDSS_json = getReqeustHistoryFrameCDSS(request);"+ '\n\n' +
+		
+	'	if(!HistoryFrameCDSS_json) {'+ '\n' +
+	'		printLogMsg("History json 파싱 중 오류가 발생했습니다.(history/TaskFrame/frame_cdss)");'+ '\n' +
+	'		return null;'+ '\n' +
+	'	}'+ '\n\n' +
+		
+	'	if(!HistoryFrameCDSS_json.appinfo) {'+ '\n' +
+	'		printLogMsg("History json 파싱 중 오류가 발생했습니다.(history/TaskFrame/frame_cdss/appinfo)");'+ '\n' +
+	'		return null;'+ '\n' +
+	'	}'+ '\n\n' +
+		
+	'	return HistoryFrameCDSS_json.appinfo.CS;'+ '\n' +
+	'}'+ '\n\n' +
+
+	'// request에서 기존 발화(history)의 action을 가져오는 함수'+ '\n' +
+	'function getRequestHistoryAction_json(request) {'+ '\n' +
+	"	var HistoryFrameCDSS_json = getRequestHistoryFrameCDSS(request);"+ '\n\n' +
+		
+	'	if(!HistoryFrameCDSS_json) {'+ '\n' +
+	'		printLogMsg("History json 파싱 중 오류가 발생했습니다.(history/TaskFrame/frame_cdss)");'+ '\n' +
+	'		return null;'+ '\n' +
+	'	}'+ '\n\n' +
+		
+	'	if(!HistoryFrameCDSS_json.appinfo) {'+ '\n' +
+	'		printLogMsg("History json 파싱 중 오류가 발생했습니다.(history/TaskFrame/frame_cdss/appinfo)");'+ '\n' +
+	'		return null;'+ '\n' +
+	'	}'+ '\n\n' +
+		
+	'	return HistoryFrameCDSS_json.appinfo.action;'+ '\n' +
+	'}'+ '\n\n' +
+
+	'// request에서 NE를 가져오는 함수'+ '\n' +
+	'function getRequestNE(request, ne_dicName) {'+ '\n' +
+	"	var param = request.param;"+ '\n\n' +
+		
+	'	if(!param) {'+ '\n' +
+	'		printLogMsg("Param 정보가 없습니다.");'+ '\n' +
+	'    return null;'+ '\n' +
+	'	}'+ '\n\n' +
+
+	'	return param[ne_dicName];'+ '\n' +
+	'}'+ '\n\n\n\n\n\n' +
+
+	'/**'+ '\n' +
+	' * intent handler functions'+ '\n' +
+	' */'+ '\n\n' +
+
+	'function intentHandler_ShowMenuList(request,response) {'+ '\n\n' +
+		
+	'	// 로그를 출력하는 공통 함수'+ '\n' +
+	'	// 이 함수를 통해 로그를 출력하면, IDE나 통합 Simulator의 오류 및 디버그 로그 창에 표시됩니다.'+ '\n' +
+	'	printLogMsg("intentHandler_ShowMenuList가 호출되었습니다.");'+ '\n\n' +
+		
+	'	// UserMesg는 사용자 발화문으로 받은 발화문을 그대로 입력합니다.'+ '\n' +
+	'  // CDSS Response-"UserMesg"는 DSS Response-"dialogframe/utter/uword"로 출력됩니다.'+ '\n' +
+	'  // ex) 미래에셋에서 미국 시황 정보 알려줘'+ '\n' +
+	'	response["UserMesg"] = request["reqmsg"];'+ '\n\n' +
+	      
+	'	// NE 구분'+ '\n' +
+	'	if(getRequestNE(request, "MenuType")) {'+ '\n\n' + 
+			
+	'		// SysAct는 시스템 액션 값으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'		//  - Operate : 서비스 즉시 실행'+ '\n' +
+	'		//  - Specify : 추가적인 정보 요청'+ '\n' +
+	'		//  - Confirm : User 의도 확인'+ '\n' +
+	'		//  - Select : User 액선 선택  유도 :'+ '\n' +
+	'		//  - Reject : 서비스 불가능 요청 또는 이해 못하는 발화'+ '\n' +
+	'		//  - RejectT : 서비스 일시 장애/네트워크 오류'+ '\n' +
+	'		//  - RejectS : 서비스 가입이 필요한 상황'+ '\n' +
+	'		// CDSS Response-"SysAct"는 DSS Response-"dialogframe/utter/sysAct"로 출력됩니다.(ID값으로 들어감)'+ '\n' +
+	'		// 여기서는 메뉴 목록 타입이 없어 바로 보여줄 수 없어, 메뉴 목록 타입을 추가로 받아야 하므로, "Specify"로 세팅합니다.'+ '\n' +
+	'		response["SysAct"] = "Specify";'+ '\n\n' +
+			
+	'		// viewtype은 노출 유형으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'		//  - A : 3rd Party사 앱(그외)'+ '\n' +
+	'		//  - T : 음성 응답'+ '\n' +
+	'		//  - U : Confirm UI (상기 SysAct가 Confirm인 경우)'+ '\n' +
+	'		//  - S : SELECT UI (상기 SysAct가 Select인 경우)'+ '\n' +
+	'		// CDSS Response-"viewtype"은 DSS Response-"dialogframe/utter/action/serviceId/viewtype"에 출력됩니다.(action은 첫번째 action)'+ '\n' +
+	'		// 여기서는 App에 전달하지 않고, 추가로 질의를 받아야 하므로, 음성 응답만 진행하므로, "T"로 세팅하니다.'+ '\n' +
+	'		response["viewtype"] = "T";'+ '\n\n' +
+			
+	'		// SysTemplate는 시스템응답문으로 입력한 값으로 음성으로 출력됩니다.'+ '\n' +
+	'		// CDSS Response-"SysTemplate"은 DSS Response-"dialogframe/utter/action/mesg"에 출력됩니다. (action은 첫번째 action)'+ '\n' +
+	'		// 여기서는 추가 질의를 입력받아야 하므로, 해당 문의 음성을 입력합니다.'+ '\n' +
+	'		response["SysTemplate"] = "세트메뉴, 단품메뉴, 추가메뉴 중에 어떤 메뉴를 조회 하시겠습니까?";'+ '\n\n' +
+			
+	'		// CS는 클라이언트와 사전에 약속된 정보 전달을 위해 사용합니다.'+ '\n' +
+	'		// 사전에 약속된 Key값은 Feature에 정의하고, 그에 대한 값은 Value에 정의합니다.'+ '\n' +
+	'		// CDSS Response-"CS"는 DSS Response-"dialogframe/utter/action/serviceId/appinfo"에 출력됩니다. (action은 첫번째 action, Feature의 값이 Name으로 Value의 값이 Value로)'+ '\n' +
+	'		// ( [ {"Feature":"City", "Value":"서울" }, {"Feature":"Weather", "Value":"맑음" }] -> {"City":"서울", "Weather":"맑음" }'+ '\n' +
+	'		// 여기서는 추가 질문을 하고 있으므로, 별도로 정보를 넘기지 않습니다.'+ '\n' +
+	'		// response["CS"] = ;'+ '\n\n' +
+			
+	'	}'+ '\n' +
+	'	else if(getRequestNE(request, "MenuListType")) {'+ '\n\n' + 
+
+	'		var menuListType = getRequestNE(request, "MenuListType");'+ '\n\n' +
+			
+	'		// 여기서는 메뉴 목록 타입이 선택되어 있어 바로 보여주면 되므로, "Operate"로 세팅합니다.'+ '\n' +
+	'		response["SysAct"] = "Operate";'+ '\n\n' +
+			
+	'		// 여기서는 질의 해석 결과를 App으로 전달해야 하므로, "A"로 세팅합니다.'+ '\n' +
+	'		response["viewtype"] = "A";'+ '\n\n' +
+			
+	'		// 여기서는 선택된 메뉴 목록 타입에 따른 메뉴 목록을 출력하므로, 그에 맞는 음성을 입력합니다.'+ '\n' +
+	'		response["SysTemplate"] = menuListType + "에는 어떤 메뉴들이 있는지 알려 드립니다.";'+ '\n\n' +
+			
+	'		// 여기서는 3rd Party App에서 인지할 수 있도록, 메뉴 목록 타입을 전달합니다.'+ '\n' +
+	'		response["CS"] = [{"Feature":"MenuListType", "Value":menuListType}];'+ '\n\n' +
+
+	'	}'+ '\n' +
+	'	else'+ '\n' +
+	'		return "Reject";'+ '\n\n' +
+
+	'	// action은 반복적인 개체를 전달할 때 유용합니다. 역시 클라이언트와 각 속성 키값은 사전에 약속이 되어 있어야 합니다.'+ '\n' +
+	'	// CDSS Response-"action"은 DSS Response-"dialogframe/utter/action"에 출력됩니다. (action은 두번째 action부터 생성, action 내 속성은 action tag 하위로 생성)'+ '\n' +
+	'	// 여기서는 전달할 목록 데이터가 없으므로, 별도로 정보를 넘기지 않습니다.'+ '\n' +
+	'	// response["action"] = ;'+ '\n\n' +
+
+	'	// actioncnt는 상기 action의 수량'+ '\n' +
+	'	// actioncnt는 action의 수량입니다.'+ '\n' +
+	'	// 여기서는 전달할 목록 데이터가 없으므로, 별도로 정보를 넘기지 않습니다.'+ '\n' +
+	'	// response["actioncnt"] = ;'+ '\n\n' +
+
+	'	return "Success";'+ '\n' +
+	'}'+ '\n\n' +
+
+	'function intentHandler_ShowMenu(request,response) {'+ '\n\n' +
+
+
+	'	printLogMsg("intentHandler_ShowMenu가 호출되었습니다.");'+ '\n\n' +
+		
+	'	// NE 확인'+ '\n' +
+	'	if(!getRequestNE(request, "Menu"))'+ '\n' +
+	'		return "Reject";'+ '\n\n' +
+
+	'	var menuName = getRequestNE(request, "Menu");'+ '\n' +
+			
+	'	// 여기서는 메뉴 조회를 바로 하면 되므로, "Operate"로 세팅합니다.'+ '\n' +
+	'	response["SysAct"] = "Operate";'+ '\n\n' +
+			
+	'	// 여기서는 질의 해석 결과를 App으로 전달해야 하므로, "A"로 세팅합니다.'+ '\n' +
+	'	response["viewtype"] = "A";'+ '\n\n' +
+			
+	'	// 여기서는 메뉴 조회를 바로 하면 되므로, 그에 맞는 음성을 입력합니다.'+ '\n' +
+	'	response["SysTemplate"] = menuName + "에 대해서 알려드립니다.";'+ '\n\n' +
+			
+	'	// 여기서는 3rd Party App에서 인지할 수 있도록, 메뉴명을 전달합니다.'+ '\n' +
+	'	response["CS"] = [{"Feature":"Menu", "Value":menuName}];'+ '\n\n' +
+			
+	'	// 여기서는 전달할 목록 데이터가 없으므로, 별도로 정보를 넘기지 않습니다.'+ '\n' +
+	'	// response["action"] = ;'+ '\n\n' +
+			
+	'	// 여기서는 전달할 목록 데이터가 없으므로, 별도로 정보를 넘기지 않습니다.'+ '\n' +
+	'	// response["actioncnt"] = ;'+ '\n\n' +
+
+	'	return "Success";'+ '\n' +
+	'}'+ '\n\n' +
+
+	'function intentHandler_OrderMenu(request,response) {'+ '\n\n' +
+		
+	'	printLogMsg("intentHandler_OrderMenu가 호출되었습니다.");'+ '\n\n' +
+		
+	'	response["UserMesg"] = request["reqmsg"];'+ '\n\n' +
+	      
+	'	// NE 구분'+ '\n' +
+	'	if(getRequestNE(request, "Menu")) {'+ '\n\n' + 
+
+	'		var menuName = getRequestNE(request, "Menu");'+ '\n\n' +
+			
+	'		// 여기서는 메뉴명을 받았지만, 정확한 주문을 위하여 한 번 더 확인을 하므로 "Confirm"으로 세팅합니다.'+ '\n' +
+	'		response["SysAct"] = "Confirm";'+ '\n\n' +
+			
+	'		// 여기서는 App에 전달하지 않고, 확인 질의를 받아야 하므로, 음성 응답만 진행하므로, "T"로 세팅하니다.'+ '\n' +
+	'		response["viewtype"] = "T";'+ '\n\n' +
+			
+	'		// 여기서는 추가 질의를 입력받아야 하므로, 해당 문의 음성을 입력합니다.'+ '\n' +
+	'		response["SysTemplate"] = menuName + " 메뉴를 주문하시겠니까?";'+ '\n\n' +
+			
+	'		// 여기서는 확인 질문을 하고 있으므로, 별도로 정보를 넘기지 않습니다.'+ '\n' +
+	'		// response["CS"] = ;'+ '\n\n' +
+		
+	'	}'+ '\n' +
+	'	else if(getRequestNE(request, "MenuConfirm")) {'+ '\n\n' + 
+
+	'		// 이전 질문이 "메뉴 주문"인지 확인'+ '\n' +
+	'		var RequestHistoryGoal = getRequestHistoryGoal(request);'+ '\n' +
+	'		var menuName = getRequestNE(request, "Menu");'+ '\n\n' +
+			
+	'		if(RequestHistoryGoal!="OrderMenu" || menuName==null)'+ '\n' +
+	'			return "Reject";'+ '\n\n' +
+			
+	'		if(getRequestNE(request, "MenuConfirm")=="아니") {'+ '\n' +
+	'			// 여기서는 메뉴 주문을 바로 하지 않으므로 "Operate"로 세팅합니다.'+ '\n' +
+	'			response["SysAct"] = "Operate";'+ '\n\n' +
+				
+	'			// 주문을 하지 않으므로 음성으로 안내만 하므로, "T"로 세팅합니다.'+ '\n' +
+	'			response["viewtype"] = "T";'+ '\n\n' +
+			
+	'			// 여기서는 주문 취소 안내 음성을 입력합니다.'+ '\n' +
+	'			response["SysTemplate"] = menuName + " 메뉴 주문을 취소하셨습니다.";'+ '\n\n' +
+				
+	'			// 여기서는 주문 취소이므로 별도로 정보를 넘기지 않습니다.'+ '\n' +
+	'			// response["CS"] = ;'+ '\n\n' +
+			
+	'		}'+ '\n' +
+	'		else {'+ '\n' +
+	'			// 여기서는 메뉴 주문을 바로 주문하므로 "Operate"로 세팅합니다.'+ '\n' +
+	'			response["SysAct"] = "Operate";'+ '\n\n' +
+				
+	'			// 여기서는 질의 해석 결과를 App으로 전달해야 하므로, "A"로 세팅합니다.'+ '\n' +
+	'			response["viewtype"] = "A";'+ '\n\n' +
+						
+	'			// 여기서는 주문 안내 음성을 입력합니다.'+ '\n' +
+	'			response["SysTemplate"] = menuName + " 메뉴 주문을 진행합니다.";'+ '\n\n' +
+				
+	'			// 여기서는 3rd Party App에서 인지할 수 있도록, 주문하는 메뉴를 전달합니다.'+ '\n' +
+	'			response["CS"] = [{"Feature":"Menu", "Value":menuName}];'+ '\n\n' +
+			
+	'		}'+ '\n' +
+	'	}'+ '\n' +
+	'	else'+ '\n' +
+	'		return "Reject";'+ '\n\n' +
+
+	'	// 여기서는 전달할 목록 데이터가 없으므로, 별도로 정보를 넘기지 않습니다.'+ '\n' +
+	'	// response["action"] = ;'+ '\n\n' +
+			
+	'	// 여기서는 전달할 목록 데이터가 없으므로, 별도로 정보를 넘기지 않습니다.'+ '\n' +
+	'	// response["actioncnt"] = ;'+ '\n\n' +
+
+	'	return "Success";'+ '\n' +
+	'}'+ '\n\n';
+
+var _commonStr2 =
+	'/**'+ '\n' +
+	' * sample codes'+ '\n' +
+	' */'+ '\n' +
+	'/*'+ '\n' +
+	'  // 샘플 예제#1 시작'+ '\n\n' +
+
+	'  // 샘플 인텐트 처리 함수#1'+ '\n' +
+	'  function intentHandler_QueryFindTrend(request,response) {'+ '\n\n' +
+
+	'   // result는 응답값으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'	 //  - Success - Goal 처리 성공'+ '\n' +
+	'	 //  - Fail - Goal 처리 실패'+ '\n' +
+	'	 //  - Type1 - 별도의 CDSS 처리 로직이 수행되지 않고, 단순 VSType#1으로 작동'+ '\n' +
+	'	 //  - Null - 정의되지 않은 발화문'+ '\n\n' +
+
+	'	 var result = "Success";'+ '\n' +
+	'	 var dbgMsg = "";'+ '\n\n' +
+
+	'   // UserMesg는 사용자 발화문으로 받은 발화문을 그대로 입력합니다.'+ '\n' +
+	'   // CDSS Response-UserMesg -> DSS Response-dialogframe/utter/uword대로 입력합니다'+ '\n' +
+	'   // ex) 미래에셋에서 미국 시황 정보 알려줘'+ '\n' +
+	'	 response["UserMesg"] = request["UserMesg"];'+ '\n\n' +
+
+	'	 // SysAct는 시스템 액션 값으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'   //  - Operate : 서비스 즉시 실행'+ '\n' +
+	'   //  - Specify : 추가적인 정보 요청'+ '\n' +
+	'   //  - Confirm : User 의도 확인'+ '\n' +
+	'   //  - Select : User 액선 선택  유도 :'+ '\n' +
+	'   //  - Reject : 서비스 불가능 요청 또는 이해 못하는 발화'+ '\n' +
+	'   //  - RejectT : 서비스 일시 장애/네트워크 오류'+ '\n' +
+	'   //  - RejectS : 서비스 가입이 필요한 상황'+ '\n' +
+	'	 // CDSS Response-SysAct -> DSS Response-dialogframe/utter/sysAct (ID값으로 들어감)'+ '\n' +
+	'   response["SysAct"] = "Operate";'+ '\n\n' +
+
+	'	 // viewtype은 노출 유형으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'	 //  - A : 3rd Party사 앱(그외)'+ '\n' +
+	'	 //  - T : 음성 응답'+ '\n' +
+	'	 //  - U : Confirm UI (상기 SysAct가 Confirm인 경우)'+ '\n' +
+	'	 //  - S : SELECT UI (상기 SysAct가 Select인 경우)'+ '\n' +
+	'	 // CDSS Response-viewtype -> DSS Response-dialogframe/utter/action/serviceId/viewtype (action은 첫번째 action)'+ '\n' +
+	'   response["viewtype"] = "A";'+ '\n\n' +
+
+	'	 // SysTemplate는 시스템응답문으로 입력한 값으로 음성으로 출력됩니다.'+ '\n' +
+	'	 // CDSS Response-SysTemplate -> DSS Response-dialogframe/utter/action/mesg (action은 첫번째 action)'+ '\n' +
+	'   response["SysTemplate"] = "금일 증권 시황 정보를 알려드리겠습니다.";'+ '\n\n' +
+
+	'   // CS는 클라이언트와 사전에 약속된 정보 전달을 위해 사용합니다.'+ '\n' +
+	'   // 사전에 약속된 Key값은 Feature에 정의하고, 그에 대한 값은 Value에 정의합니다.'+ '\n' +
+	'   // CDSS Response-CS -> DSS Response-dialogframe/utter/action/serviceId/appinfo (action은 첫번째 action, Feature의 값이 Name으로 Value의 값이 Value로)'+ '\n' +
+	'   // ( [ {"Feature":"City", "Value":"서울" }, {"Feature":"Weather", "Value":"맑음" }] -> {"City":"서울", "Weather":"맑음" }'+ '\n' +
+	'   response["CS"] = "['+ '\n' +
+	'                       {"Feature":"miraeUrl", "Value":"https://www.miraeassetdaewoo.com/bbs/board/message/view.do?categoryId=51&messageId=2197026"}'+ '\n' +
+	'                     ]";'+ '\n\n' +
+
+	'	 // action은 반복적인 개체를 전달할 때 유용합니다. 역시 클라이언트와 각 속성 키값은 사전에 약속이 되어 있어야 합니다.'+ '\n' +
+	'	 // CDSS Response-action -> DSS Response-dialogframe/utter/action (action은 두번째 action부터 생성, action 내 속성은 action tag 하위로 생성)'+ '\n' +
+	'   // response["action"] = "";'+ '\n\n' +
+
+	'	 // actioncnt는 상기 action의 수량'+ '\n' +
+	'	 // actioncnt는 action의 수량입니다.'+ '\n' +
+	'	 // response["actioncnt"] = 0;'+ '\n\n' +
+
+	'	 // 디버그 메시지 출력'+ '\n' +
+	'	 dbgMsg = "CS : " + response["CS"]'+ '\n' +
+	'	 printLogMsg(dbgMsg);'+ '\n' +
+	'	 return result;'+ '\n' +
+	'  }'+ '\n\n' +
+
+	'  // 샘플 인텐트 처리 함수#2'+ '\n' +
+	'  function intentHandler_QueryReport(request,response) {'+ '\n\n' +
+
+	'   // result는 응답값으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'	 //  - Success - Goal 처리 성공'+ '\n' +
+	'	 //  - Fail - Goal 처리 실패'+ '\n' +
+	'	 //  - Type1 - 별도의 CDSS 처리 로직이 수행되지 않고, 단순 VSType#1으로 작동'+ '\n' +
+	'	 //  - Null - 정의되지 않은 발화문'+ '\n' +
+	'	 var result = "Success";'+ '\n' +
+	'	 var dbgMsg = "";'+ '\n\n' +
+
+	'	 // UserMesg는 사용자 발화문으로 받은 발화문을 그대로 입력합니다.'+ '\n' +
+	'	 // CDSS Response-UserMesg -> DSS Response-dialogframe/utter/uword대로 입력합니다'+ '\n' +
+	'   // ex) 미래에셋 주간리포트 알려줘'+ '\n' +
+	'	 response["UserMesg"] = request["UserMesg"];'+ '\n\n' +
+
+	'	 // SysAct는 시스템 액션 값으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'   //  - Operate : 서비스 즉시 실행'+ '\n' +
+	'   //  - Specify : 추가적인 정보 요청'+ '\n' +
+	'   //  - Confirm : User 의도 확인'+ '\n' +
+	'   //  - Select : User 액선 선택  유도 : '+ '\n' +
+	'   //  - Reject : 서비스 불가능 요청 또는 이해 못하는 발화'+ '\n' +
+	'   //  - RejectT : 서비스 일시 장애/네트워크 오류'+ '\n' +
+	'   //  - RejectS : 서비스 가입이 필요한 상황'+ '\n' +
+	'	 // CDSS Response-SysAct -> DSS Response-dialogframe/utter/sysAct (ID값으로 들어감)'+ '\n' +
+	'   response["SysAct"] = "Operate";'+ '\n\n' +
+
+	'	 // viewtype은 노출 유형으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'	 //  - A : 3rd Party사 앱(그외)'+ '\n' +
+	'	 //  - T : 음성 응답'+ '\n' +
+	'	 //  - U : Confirm UI (상기 SysAct가 Confirm인 경우)'+ '\n' +
+	'	 //  - S : SELECT UI (상기 SysAct가 Select인 경우)'+ '\n' +
+	'	 // CDSS Response-viewtype -> DSS Response-dialogframe/utter/action/serviceId/viewtype (action은 첫번째 action)'+ '\n' +
+	'   response["viewtype"] = "A";'+ '\n\n' +
+
+	'	 // SysTemplate는 시스템응답문으로 입력한 값으로 음성으로 출력됩니다.'+ '\n' +
+	'	 // CDSS Response-SysTemplate -> DSS Response-dialogframe/utter/action/mesg (action은 첫번째 action)'+ '\n' +
+	'   response["SysTemplate"] = "금주 주간리포트 정보를 알려드리겠습니다.";'+ '\n\n' +
+
+	'   // CS는 클라이언트와 사전에 약속된 정보 전달을 위해 사용합니다.'+ '\n' +
+	'   // 사전에 약속된 Key값은 Feature에 정의하고, 그에 대한 값은 Value에 정의합니다.'+ '\n' +
+	'   // CDSS Response-CS -> DSS Response-dialogframe/utter/action/serviceId/appinfo (action은 첫번째 action, Feature의 값이 Name으로 Value의 값이 Value로)'+ '\n' +
+	'   // ( [ {"Feature":"City", "Value":"서울" }, {"Feature":"Weather", "Value":"맑음" }] -> {"City":"서울", "Weather":"맑음" }'+ '\n' +
+	'   response["CS"] = "['+ '\n' +
+	'                       {"Feature":"miraeUrl", "Value":"https://www.miraeassetdaewoo.com/bbs/board/message/view.do?messageId=225883&messageNumber=10&messageCategoryId=0&startId=zzzzz%7E&startPage=1&curPage=1&searchType=2&searchText=&searchStartYear=2016&searchStartMonth=08&searchStartDay=03&searchEndYear=2017&searchEndMonth=08&searchEndDay=03&lastPageFlag=&categoryId=8&dataType=2"}'+ '\n' +
+	'                     ]";'+ '\n\n' +
+
+	'	 // action은 반복적인 개체를 전달할 때 유용합니다. 역시 클라이언트와 각 속성 키값은 사전에 약속이 되어 있어야 합니다.'+ '\n' +
+	'	 // CDSS Response-action -> DSS Response-dialogframe/utter/action (action은 두번째 action부터 생성, action 내 속성은 action tag 하위로 생성)'+ '\n' +
+	'  	 // response["action"] = "";'+ '\n\n' +
+
+	'	 // actioncnt는 상기 action의 수량'+ '\n' +
+	'	 // actioncnt는 action의 수량입니다.'+ '\n' +
+	'	 // response["actioncnt"] = 0;'+ '\n\n' +
+
+	'	 // 디버그 메시지 출력'+ '\n' +
+	'	 dbgMsg = "CS : " + response["CS"]'+ '\n' +
+	'	 printLogMsg(dbgMsg);'+ '\n\n' +
+
+	'	 return result;'+ '\n' +
+	'  }'+ '\n' +
+	'  // 샘플 예제#1 종료'+ '\n' +
+	'*/'+ '\n\n' +
+
+
+	'/*'+ '\n' +
+	'  // 샘플 예정#2 시작'+ '\n\n' +
+
+	'  // 샘플 인텐트 처리 함수'+ '\n' +
+	'  function intentHandler_ShowMenu(request,response) {'+ '\n\n' +
+
+	"    var menuName = request.param['MenuType'];"+ '\n\n' +
+
+	'    switch(request.pr) {'+ '\n' +
+	"		  case 'Show' :"+ '\n' +
+	'         // 인텐트 ShowMenu의 PR Show의 NE 처리 분기'+ '\n' +
+	'		     switch(menuName) {'+ '\n' +
+	"		     	case '전체메뉴' :"+ '\n' +
+	'		     	  return goalHandler_ShowMenu(request,response);'+ '\n' +
+	"		     	case '점심메뉴' :"+ '\n' +
+	'		     	  return goalHandler_ShowLunchMenu(request,response);'+ '\n' +
+	'		     }'+ '\n' +
+	'		     break;'+ '\n' +
+	"		  case 'Howmuch' :"+ '\n' +
+	'        // 인텐트 ShowMenu의 PR Howmuch의 NE 처리 분기'+ '\n' +
+	'		    switch(menuName) {'+ '\n' +
+	"		      case '모둠보쌈' :"+ '\n' +
+	'		    	  return goalHandler_HowmuchModumBossam(request,response);'+ '\n' +
+	"		      case '일반보쌈' :"+ '\n' +
+	'		    	  return goalHandler_HowmuchNormalBossam(request,response);'+ '\n' +
+	'		    }'+ '\n' +
+	'		    break;'+ '\n' +
+	'  	}	   '+ '\n\n' +
+
+	'  	// 처리가 없는 경우, 정의되지 않은 발화문 처리'+ '\n' +
+	'  	return "Null";'+ '\n' +
+	' }'+ '\n\n' +
+
+	' // 상기 Intent 처리 함수에서 분기된 Goal 처리 함수'+ '\n' +
+	' function goalHandler_ShowLunchMenu(request,response) {'+ '\n\n' +
+
+	'	 // result는 응답값으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'	 //  - Success - Goal 처리 성공'+ '\n' +
+	'	 //  - Fail - Goal 처리 실패'+ '\n' +
+	'	 //  - Type1 - 별도의 CDSS 처리 로직이 수행되지 않고, 단순 VSType#1으로 작동'+ '\n' +
+	'	 var result = "Success";'+ '\n' +
+	'	 var dbgMsg = "";'+ '\n\n' +
+
+	'	 // UserMesg는 사용자 발화문으로 받은 발화문을 그대로 입력합니다.'+ '\n' +
+	'	 // CDSS Response-UserMesg -> DSS Response-dialogframe/utter/uword대로 입력합니다'+ '\n' +
+	'   // ex) 런치메뉴 보여줘'+ '\n' +
+	'	 response["UserMesg"] = request["UserMesg"];'+ '\n\n' +
+
+	'	 // SysAct는 시스템 액션 값으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'   //  - Operate : 서비스 즉시 실행'+ '\n' +
+	'   //  - Specify : 추가적인 정보 요청'+ '\n' +
+	'   //  - Confirm : User 의도 확인'+ '\n' +
+	'   //  - Select : User 액선 선택  유도 : '+ '\n' +
+	'   //  - Reject : 서비스 불가능 요청 또는 이해 못하는 발화'+ '\n' +
+	'   //  - RejectT : 서비스 일시 장애/네트워크 오류'+ '\n' +
+	'   //  - RejectS : 서비스 가입이 필요한 상황'+ '\n' +
+	'	 // CDSS Response-SysAct -> DSS Response-dialogframe/utter/sysAct (ID값으로 들어감)'+ '\n' +
+	'   response["SysAct"] = "Operate";'+ '\n\n' +
+
+	'	 // viewtype은 노출 유형으로 아래의 값을 가질 수 있습니다.'+ '\n' +
+	'	 //  - A : 3rd Party사 앱(그외)'+ '\n' +
+	'	 //  - T : 음성 응답'+ '\n' +
+	'	 //  - U : Confirm UI (상기 SysAct가 Confirm인 경우)'+ '\n' +
+	'	 //  - S : SELECT UI (상기 SysAct가 Select인 경우)'+ '\n' +
+	'	 // CDSS Response-viewtype -> DSS Response-dialogframe/utter/action/serviceId/viewtype (action은 첫번째 action)'+ '\n' +
+	'   response["viewtype"] = "A";'+ '\n\n' +
+
+	'	 // SysTemplate는 시스템응답문으로 입력한 값으로 음성으로 출력됩니다.'+ '\n' +
+	'	 // CDSS Response-SysTemplate -> DSS Response-dialogframe/utter/action/mesg (action은 첫번째 action)'+ '\n' +
+	'   response["SysTemplate"] = "지니족발보쌈에는 보쌈과 족발 외에도 다양한 런치 메뉴들이 있습니다.";'+ '\n\n' +
+
+	'   // CS는 클라이언트와 사전에 약속된 정보 전달을 위해 사용합니다.'+ '\n' +
+	'   // 사전에 약속된 Key값은 Feature에 정의하고, 그에 대한 값은 Value에 정의합니다.'+ '\n' +
+	'   // CDSS Response-CS -> DSS Response-dialogframe/utter/action/serviceId/appinfo (action은 첫번째 action, Feature의 값이 Name으로 Value의 값이 Value로)'+ '\n' +
+	'   // ( [ {"Feature":"City", "Value":"서울" }, {"Feature":"Weather", "Value":"맑음" }] -> {"City":"서울", "Weather":"맑음" }'+ '\n' +
+	'   response["CS"] = "['+ '\n' +
+	'                       {"Feature":"title", "Value":"지니보쌈족발의 런치메뉴"}'+ '\n' +
+	'                       {"Feature":"time", "Value":"11:00 ~ 14:00"}'+ '\n' +
+	'                     ]";'+ '\n\n' +
+
+	'	 // action은 반복적인 개체를 전달할 때 유용합니다. 역시 클라이언트와 각 속성 키값은 사전에 약속이 되어 있어야 합니다.'+ '\n' +
+	'	 // CDSS Response-action -> DSS Response-dialogframe/utter/action (action은 두번째 action부터 생성, action 내 속성은 action tag 하위로 생성)'+ '\n' +
+	'   response["action"] = "['+ '\n' +
+	'                           {"name":"보쌈정식", "price":"8000", "desc":"부드러운 수육과 보쌈김치를 함께", "imgUrl":"http://rsc.geniebojok.com/img/menu/lunch/menu142412.png"},'+ '\n' +
+	'                           {"name":"해물순두부찌개", "price":"6000", "desc":"시원하고 얼큰한 맛이 일품!", "imgUrl":"http://rsc.geniebojok.com/img/menu/lunch/menu143123.png"},'+ '\n' +
+	'                           {"name":"스팸도시락", "price":"7000", "desc":"맛있는 스팸이 가득!", "imgUrl":"http://rsc.geniebojok.com/img/menu/lunch/menu142247.png"},'+ '\n' +
+	'                           {"name":"돈까스도시락", "price":"7000", "desc":"맛있는 돈까스가 가득!", "imgUrl":"http://rsc.geniebojok.com/img/menu/lunch/menu142685.png"},'+ '\n' +
+	'                           {"name":"보쌈도시락", "price":"8000", "desc":"지니의 보쌈과 먹는 식사!", "imgUrl":"http://rsc.geniebojok.com/img/menu/lunch/menu142866.png"},'+ '\n' +
+	'                           {"name":"불고기도시락", "price":"9000", "desc":"달달한 불고기가 가득!", "imgUrl":"http://rsc.geniebojok.com/img/menu/lunch/menu142327.png"},'+ '\n' +
+	'                           {"name":"보쌈+불고기도시락", "price":"10000", "desc":"달달한 불고기와 땡떙보쌈!", "imgUrl":"http://rsc.geniebojok.com/img/menu/lunch/menu142238.png"}'+ '\n' +
+	'                         ]";'+ '\n\n' +
+
+	'	 // actioncnt는 상기 action의 수량'+ '\n' +
+	'	 // actioncnt는 action의 수량입니다.'+ '\n' +
+	'	 response["actioncnt"] = 7;'+ '\n' +
+	'	 // 디버그 메시지 출력'+ '\n' +
+	'	 dbgMsg = "CS : " + response["CS"]'+ '\n' +
+	'	 printLogMsg(dbgMsg);'+ '\n\n' +
+
+	'	 return result;'+ '\n' +
+	' };				'+ '\n\n' +
+
+	' function goalHandler_ShowMenu(request,response) {'+ '\n' +
+	'   var result = "Type1";'+ '\n' +
+	'	 ...'+ '\n\n' +
+
+	'	 return result;'+ '\n' +
+	' }'+ '\n\n' +
+
+	' function goalHandler_HowmuchModumBossam(request,response) {'+ '\n' +
+	'   var result = "Type1";'+ '\n' +
+	''+ '\n' +
+	'	 ...'+ '\n\n' +
+
+	'	 return result;'+ '\n' +
+	' };				'+ '\n\n' +
+
+	' function goalHandler_HowmuchNormalBossam(request,response) {'+ '\n' +
+	'   var result = "Type1";'+ '\n\n' +
+
+	'	 ...'+ '\n\n' +
+
+	'	 return result;'+ '\n' +
+	' };'+ '\n\n' +
+
+	'  // 샘플 예정#2 종료'+ '\n' +
+	'*/'+ '\n';
+
+var _commonFnStr = 
+'\t' + 'var result = "Type1";' + '\n\n' +
+
+'\t' + 'response["UserMesg"] = request["reqmsg"];' + '\n\n' +
+
+'\t' + '// response["SysAct"] = "";' + '\n\n' +
+
+'\t' + '// response["viewtype"] = "";' + '\n\n' +
+
+'\t' + '// response["SysTemplate"] = "";' + '\n\n' +
+
+'\t' + '// response["CS"] = "";' + '\n\n' +
+
+'\t' + '// response["action"] = "";' + '\n\n' +
+
+'\t' + '// response["actioncnt"] = "0";' + '\n\n' +
+
+'\t' + 'return result;' + '\n';
+
+var _commonHdStr =
+'/**' + '\n' +
+' * custom script main' + '\n' +
+' */' + '\n' +
+'// Intent에 따른 분기' + '\n' +
+'exports.handler = function (request,response) {' + '\n' +
+'	// Intent 처리 분기' + '\n' +
+"	switch(request['intent']) {" + '\n';
+
+var _cdssExcuteAddress		= 'http://211.253.29.94:10000/executeScript';
+var _cdssConsoleLogAddress	= 'http://211.253.29.94:10000/getCustomLog';
+var _cdssValidateAddress	= 'http://211.253.29.94:10000/validateScript';
+var _cdssSaveScriptAddress	= 'http://211.253.29.94:10000/saveScript';
+var _cdssReloadService		= 'http://211.253.29.94:10000/reloadService';
+var _depSaveScriptAddress	= 'http://211.253.29.94:30000/saveScript';
+var _depReloadService		= 'http://211.253.29.94:30000/reloadService';
+
+var _cdssGenerate			= 'http://175.209.251.21:8080/gboxrelay/cdssGenerate';
